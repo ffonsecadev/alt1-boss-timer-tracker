@@ -1,0 +1,16 @@
+{
+	"appName": "Boss timer tracker",
+	"description": "Boss timer tracker for runepixels.com",
+	"appUrl": "./index.html",
+	"configUrl": "./appconfig.json",
+	"iconUrl": "",
+	"defaultWidth": 92,
+	"defaultHeight": 204,
+	"minWidth": 92,
+	"minHeight": 204,
+	"maxWidth": 1000,
+	"maxHeight": 1000,
+	"requestHandlers": [ ],
+	"activators": [	],
+	"permissions": "pixel"
+}
