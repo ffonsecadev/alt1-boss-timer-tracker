@@ -1,0 +1,51 @@
+@font-face {
+    font-family: 'regular';
+    src: url(OpenSans-Regular.ttf);
+}
+
+@font-face {
+    font-family: bold;
+    src: url(OpenSans-Bold.ttf);
+}
+
+body{
+    margin: 0;
+    background-color: #252423;
+    color: #a6a6a4;
+    font-family: 'regular';
+    font-size: 14px;
+}
+
+.warning{
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: #1f1f1f;
+    font-size: 13px;
+    text-align: center;
+    box-shadow: 0 0 2px 0 #000000;
+}
+
+.content{
+    margin: 10px;
+}
+
+#status{
+    color: #ffc90e;
+}
+
+#status.active{
+    color: #22b14c;
+}
+
+#status.error{
+    color: #ff4c4c;
+}
+
+.boss{
+    margin-top: 10px;
+}
+
+.boss span:nth-child(1){
+    color: #22b14c;
+}
