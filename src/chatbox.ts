@@ -57,8 +57,38 @@ const badgemap: { [key in keyof typeof chatbadges.raw]: string } = {
 	hcim: "\u{1F480}",//SKULL
 }
 
-export const defaultcolors = [
+/* export const defaultcolors = [
 	[255, 255, 255],
+	[45,186,20]
+]; */
+
+export const defaultcolors = [
+	[0, 255, 0],
+	[0, 255, 255],
+	[0, 175, 255],
+	[0, 0, 255],
+	[255, 82, 86],
+	[159, 255, 159],
+	[0, 111, 0],
+	[255, 143, 143],
+	[255, 152, 31],
+	[255, 111, 0],
+	[255, 255, 0],
+	//[239, 0, 0],//messes up broadcast detection [255,0,0]
+	[239, 0, 175],
+	[255, 79, 255],
+	[175, 127, 255],
+	//[48, 48, 48],//fuck this color, its unlegible for computers and people alike
+	[191, 191, 191],
+	[127, 255, 255],
+	[128, 0, 0],
+	[255, 255, 255],
+	[127, 169, 255],
+	[255, 140, 56], //orange drop received text
+	[255, 0, 0], //red achievement world message
+	[69, 178, 71], //blueish green friend broadcast
+	[164, 153, 125], //brownish gray friends/fc/cc list name
+	[215, 195, 119], //interface preset color
 	[45,186,20]
 ];
 
