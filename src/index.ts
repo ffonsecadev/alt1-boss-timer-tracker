@@ -28,18 +28,15 @@ class BossTimerTrack {
 		timer: ""
 	};
 	private timers: string[] = [];
+	private lastBossName = "";
 
 	constructor() {
 		this.screen = a1lib.captureHoldFullRs();
 		this.chatBox = new ChatBoxReader();
 		this.targetMob = new TargetMobReader();
-		this.timers.push("00:11");
-		this.timers.push("00:12");
-		this.refreshTimersList();
 	}
 
 	public start() {
-		this.refreshTimersList();
 		let result = this.chatBox.find(this.screen);
 		if (result == null) {
 			this.eventShow("We couldn't find your chatbox", true);
@@ -86,7 +83,7 @@ class BossTimerTrack {
 						this.playerTimer.timer = timer;
 						this.sendTime();
 						this.timers.push(timer);
-						this.refreshTimersList();
+						DOM.updateTimersList(this.timers);
 					}
 				}
 			});
@@ -114,14 +111,12 @@ class BossTimerTrack {
 
 		response.then(() => {
 			this.eventShow("...", false);
-			DOM.setBossName("...");
 			this.playerTimer.boss = -1;
 			this.playerTimer.timer = "";
 		});
 
 		response.catch((err: any) => {
 			this.eventShow("Error save the timer", true);
-			DOM.setBossName("...");
 			this.playerTimer.boss = -1;
 			this.playerTimer.timer = "";
 		});
@@ -131,15 +126,31 @@ class BossTimerTrack {
 		if (text != "" && text.indexOf("session against:") > -1) {
 			let boss = text.split("session against:")[1];
 			boss = boss.slice(0, -1).trim();
-			DOM.setBossName(boss);
-			this.setBoss(boss);
+			this.setBoss(boss); 
+			
+			if(this.playerTimer.boss > -1){
+				DOM.setBossName(boss);
+				if(this.lastBossName != boss){
+					this.lastBossName = boss;
+					this.timers = [];
+					DOM.updateTimersList(this.timers);
+				}
+			}
 			return;
 		}
 
 		let boss = this.targetMob.read();
 		if (boss != null && boss.name.length > 0) {
-			DOM.setBossName(boss.name);
 			this.setBoss(boss.name);
+
+			if(this.playerTimer.boss > -1){
+				DOM.setBossName(boss.name);
+				if(this.lastBossName != boss.name){
+					this.lastBossName = boss.name;
+					this.timers = [];
+					DOM.updateTimersList(this.timers);
+				}
+			}
 		}
 	}
 
@@ -229,7 +240,7 @@ class BossTimerTrack {
 				this.playerTimer.boss = 20;
 				return;
 			}
-			case "Giant Mole": {
+			case "Giant mole": {
 				this.playerTimer.boss = 21;
 				return;
 			}
@@ -249,6 +260,10 @@ class BossTimerTrack {
 				this.playerTimer.boss = 25;
 				return;
 			}
+			case "Nex": {
+				this.playerTimer.boss = 28;
+				return;
+			}
 			default: {
 				if (boss.indexOf("Dagannoth") > -1) {
 					this.playerTimer.boss = 26;
@@ -262,14 +277,8 @@ class BossTimerTrack {
 			}
 		}
 
+		this.playerTimer.boss = -1;
 		this.eventShow(boss + " not found", true);
-	}
-
-	private refreshTimersList() {
-		DOM.clearList();
-		this.timers.map((timer: string) => {
-			DOM.setTimer(timer);
-		})
 	}
 
 	private eventShow(content: string, isError: boolean = false) {
@@ -295,12 +304,37 @@ class DOM {
 		this.bossName().innerHTML = name;
 	}
 
-	public static clearList(){
+	public static updateTimersList(timer: string[]) {
 		this.timerList().innerHTML = "";
-	}
+		let currentBest = new Date().getTime();
+		let currentTimer = "";
+		
+		timer.map((timer: string) => {
+			let stringDate = "0001-01:01";
 
-	public static setTimer(timer: string) {
-		this.timerList().insertAdjacentHTML("afterbegin", "<span>" + timer + "</span>");
+			if(timer.match(/:/g).length > 1){
+				stringDate += " " + timer
+			}else{
+				stringDate += " 00:" + timer
+			}
+
+			let date = Date.parse(stringDate);
+			if(date < currentBest){			
+				currentBest = date;
+				currentTimer = timer;
+			}
+			this.timerList().insertAdjacentHTML("afterbegin", "<span>" + timer + "</span>");
+		});
+
+		let elements = this.timerList().querySelectorAll("span");
+		if(elements.length > 0){
+			elements.forEach((element) => {
+				element.classList.remove("best");
+				if(element.innerHTML == currentTimer){
+					element.classList.add("best");
+				}
+			});
+		}
 	}
 
 	public static event(): HTMLElement {
