@@ -52,6 +52,20 @@ body{
     color: #ff4c4c;
 }
 
+#timers{
+    margin-top: 5px;
+}
+
+#timers span{
+    display: inline-block;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    padding: 2px;
+    background-color: #201f1e;
+    font-size: 12px;
+    box-shadow: 0 0 2px 0 #000;
+}
+
 
 /* 
 #status{

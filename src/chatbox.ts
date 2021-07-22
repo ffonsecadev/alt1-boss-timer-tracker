@@ -89,7 +89,8 @@ export const defaultcolors = [
 	[69, 178, 71], //blueish green friend broadcast
 	[164, 153, 125], //brownish gray friends/fc/cc list name
 	[215, 195, 119], //interface preset color
-	[45,186,20]
+	[45,186,20],
+	[248, 217, 24]
 ];
 
 type BoxCorner = a1lib.PointLike & { type: "hidden" | "full" | "legacy" }
