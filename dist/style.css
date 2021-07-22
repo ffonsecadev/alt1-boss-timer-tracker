@@ -16,6 +16,19 @@ body{
     font-size: 14px;
 }
 
+.clearfix{
+    clear: both;
+}
+
+a{
+    text-decoration: none;
+    color: #a6a6a4;
+}
+
+a:hover{
+    text-decoration: underline;
+}
+
 .warning{
     position: absolute;
     bottom: 0;
@@ -40,7 +53,7 @@ body{
 .events{
     position: absolute;
     left: 5px;
-    bottom: 25px;
+    bottom: 40px;
     font-size: 13px;
 }
 
@@ -71,24 +84,125 @@ body{
     color: #252423;
 }
 
-
-/* 
-#status{
-    color: #ffc90e;
-}
-
-#status.active{
+#settings{
+    display: none;
+    display: inline-block;
     color: #22b14c;
+    cursor: pointer;
 }
 
-#status.error{
-    color: #ff4c4c;
+.settings-body{
+    margin: 5px;
 }
 
-.boss{
-    margin-top: 10px;
+#loaded{
+    display: none;
+    margin-top: 5px;
 }
 
-.boss span:nth-child(1){
+.settings-body label{
+    display: block;
+    margin-bottom: 5px;
     color: #22b14c;
-} */
+    font-family: 'bold';
+}
+
+.settings-body .switch{
+    display: inline-block;
+    padding: 2px;
+    background-color: #201f1e;
+    border: 1px solid #1f1f1f;
+    font-family: 'bold';
+    user-select: none;
+    box-shadow: 0px 0px 2px 0px #000;
+}
+
+.settings-body .switch span{
+    display: inline-block;
+    min-width: 30px;
+    line-height: 18px;
+    padding: 5px;
+    font-size: 13px;
+    cursor: pointer;
+    color: #a6a6a4;
+    text-align: center;
+}
+
+.settings-body .switch span.active{
+    background-color: #22b14c;
+    color: #252423;
+}
+
+#pin{
+    display: none;
+    margin-top: 5px;
+}
+
+#pin input{
+    padding-left: 10px;
+    color: #a6a6a4;
+    background-color: #201f1e;
+    border: 1px solid #201f1e;
+    outline: none;
+    box-shadow: 0 0 2px 0 #000;
+    height: 30px;
+}
+
+#pin button{
+    display: block;
+    margin-top: 5px;
+    background-color: #201f1e;
+    color: #22b14c;
+    font-family: #22b14c;
+    border: 1px solid #252423;
+    padding: 7px 15px;
+    cursor: pointer;
+    box-shadow: 0 0 2px 0 #000;
+}
+
+#pin button:hover{
+    color: #a6a6a4;
+}
+
+.loading {
+    font-size: 0 !important;
+    width: 20px !important;
+    height: 20px !important;
+    margin-top: 10px !important;
+    border-radius: 15px !important;
+    padding: 0 !important;
+    background-color: transparent !important;
+    border: 3px solid #22b14c !important;
+    border-bottom: 3px solid rgba(255,255,255,0.0) !important;
+    border-left: 3px solid rgba(255,255,255,0.0) !important;
+    background-color: transparent !important;
+    animation-name: rotateAnimation !important;
+    -webkit-animation-name: wk-rotateAnimation;
+    animation-duration: 1s !important;
+    -webkit-animation-duration: 1s !important;
+    animation-delay: 0.2s !important;
+    -webkit-animation-delay: 0.2s !important;
+    animation-iteration-count: infinite !important;
+    -webkit-animation-iteration-count: infinite !important;
+    pointer-events: none;
+}
+  
+@keyframes rotateAnimation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+  
+@-webkit-keyframes wk-rotateAnimation {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}

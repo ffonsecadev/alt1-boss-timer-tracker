@@ -1,4 +1,5 @@
 require("!file-loader?name=[name].[ext]!./index.html");
+require("!file-loader?name=[name].[ext]!./settings.html");
 require("!file-loader?name=[name].[ext]!./appconfig.json");
 require("!file-loader?name=[name].[ext]!./style.css");
 require("!file-loader?name=[name].[ext]!./assets/fonts/OpenSans-Regular.ttf");
@@ -8,8 +9,93 @@ import { ImgRef } from "@alt1/base";
 import ChatBoxReader from "./chatbox";
 import * as OCR from "@alt1/ocr";
 
+const host = location.origin.indexOf("file://") > -1 ?
+	"http://localhost:8080" :
+	"https://runepixels.com:5000";
+
+
+
+
 window.onload = function () {
+	if(location.pathname.indexOf("settings") > -1){
+		let bossTimerTrack = new BossTimerTrack();
+		bossTimerTrack.start(false);
+		loadSettings(bossTimerTrack.playerName())
+		return;
+	}
+
 	new BossTimerTrack().start();
+
+	/* document.getElementById("settings").addEventListener("click", function(){
+		let w = window.open("settings.html","Settings","width=200,height=200");
+		startSettings(w, bossTimerTrack.playerName());
+	}); */
+}
+
+
+function loadSettings(name: string){
+	const response = fetch(host + "/players/timer-settings/state?name=" + name, {
+		method: 'GET',
+		headers: {
+			'content-type': 'application/json'
+		}
+	});
+
+	response.then(response=> response.json())
+		.then(data=> { 
+			let state = data.state;
+			document.getElementById(state ? "private": "public").classList.add("active");
+			if(state){
+				document.getElementById("pin").style.display = "block";
+			}
+			document.getElementById("loading").style.display = "none";
+			document.getElementById("loaded").style.display = "block";
+		});
+
+	response.catch((err: any) => {
+		location.href = "index.html";
+	});
+
+	document.getElementById("public").addEventListener("click", function(){
+		loading();
+		let request = fetch(host + "/players/timer-settings", {
+			method: 'POST',
+			body: JSON.stringify({name: name, pin: "" }),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		request.then(()=> location.reload());
+		request.catch(() =>location.reload());
+	});
+
+	document.getElementById("private").addEventListener("click", function(){
+		document.getElementById("public").classList.remove("active");
+		document.getElementById("private").classList.add("active");
+		document.getElementById("pin").style.display = "block";
+	});
+
+	document.getElementById("submitPin").addEventListener("click", function(){
+		let pin = (document.querySelector("#pin input") as HTMLInputElement).value;
+		if(pin.length == 0){
+			return;
+		}
+
+		let request = fetch(host + "/players/timer-settings", {
+			method: 'POST',
+			body: JSON.stringify({name: name, pin: pin }),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		request.then(()=> location.reload());
+		request.catch(() =>location.reload());
+	});
+
+	function loading(){
+		document.getElementById("loading").style.display = "block";
+		document.getElementById("loaded").style.display = "none";
+	}
 }
 
 type PlayerTime = {
@@ -36,7 +122,7 @@ class BossTimerTrack {
 		this.targetMob = new TargetMobReader();
 	}
 
-	public start() {
+	public start(initAll = true) {
 		let result = this.chatBox.find(this.screen);
 		if (result == null) {
 			this.eventShow("We couldn't find your chatbox", true);
@@ -49,9 +135,16 @@ class BossTimerTrack {
 			return;
 		}
 
-		DOM.setPlayerName(this.playerTimer.name);
-		DOM.showDisplay(true);
-		this.detectChat();
+		if(initAll){
+			DOM.showSettings(true);
+			DOM.setPlayerName(this.playerTimer.name);
+			DOM.showDisplay(true);
+			this.detectChat();
+		}
+	}
+
+	public playerName(){
+		return this.playerTimer.name;
 	}
 
 	private fetchPlayerName() {
@@ -96,16 +189,11 @@ class BossTimerTrack {
 			return;
 		}
 
-		let url = location.origin.indexOf("file://") > -1 ?
-			"http://localhost:8080/players/timer" :
-			"https://runepixels.com:5000/players/timer";
-
-		const response = fetch(url, {
+		const response = fetch(host + "/players/timer", {
 			method: 'POST',
 			body: JSON.stringify(this.playerTimer),
 			headers: {
-				'content-type': 'application/json',
-				'origin': location.origin
+				'content-type': 'application/json'
 			}
 		});
 
@@ -293,47 +381,52 @@ class BossTimerTrack {
 
 class DOM {
 	public static showDisplay(state: boolean) {
-		this.display().style.display = state ? "block" : "none";
+		if(this.display())
+			this.display().style.display = state ? "block" : "none";
 	}
 
 	public static setPlayerName(name: string) {
-		this.playerName().innerHTML = name;
+		if(this.playerName())
+			this.playerName().innerHTML = name;
 	}
 
 	public static setBossName(name: string) {
-		this.bossName().innerHTML = name;
+		if(this.bossName())
+			this.bossName().innerHTML = name;
 	}
 
 	public static updateTimersList(timer: string[]) {
-		this.timerList().innerHTML = "";
-		let currentBest = new Date().getTime();
-		let currentTimer = "";
-		
-		timer.map((timer: string) => {
-			let stringDate = "0001-01:01";
-
-			if(timer.match(/:/g).length > 1){
-				stringDate += " " + timer
-			}else{
-				stringDate += " 00:" + timer
-			}
-
-			let date = Date.parse(stringDate);
-			if(date < currentBest){			
-				currentBest = date;
-				currentTimer = timer;
-			}
-			this.timerList().insertAdjacentHTML("afterbegin", "<span>" + timer + "</span>");
-		});
-
-		let elements = this.timerList().querySelectorAll("span");
-		if(elements.length > 0){
-			elements.forEach((element) => {
-				element.classList.remove("best");
-				if(element.innerHTML == currentTimer){
-					element.classList.add("best");
+		if (this.timerList()){
+			this.timerList().innerHTML = "";
+			let currentBest = new Date().getTime();
+			let currentTimer = "";
+			
+			timer.map((timer: string) => {
+				let stringDate = "0001-01:01";
+	
+				if(timer.match(/:/g).length > 1){
+					stringDate += " " + timer
+				}else{
+					stringDate += " 00:" + timer
 				}
+	
+				let date = Date.parse(stringDate);
+				if(date < currentBest){			
+					currentBest = date;
+					currentTimer = timer;
+				}
+				this.timerList().insertAdjacentHTML("afterbegin", "<span>" + timer + "</span>");
 			});
+	
+			let elements = this.timerList().querySelectorAll("span");
+			if(elements.length > 0){
+				elements.forEach((element) => {
+					element.classList.remove("best");
+					if(element.innerHTML == currentTimer){
+						element.classList.add("best");
+					}
+				});
+			}
 		}
 	}
 
@@ -355,6 +448,11 @@ class DOM {
 
 	private static timerList(): HTMLElement {
 		return document.getElementById("timers");
+	}
+
+	public static showSettings(state: boolean) {
+		if(document.getElementById("settings"))
+			document.getElementById("settings").style.display = state ? "block" : "none";
 	}
 }
 
