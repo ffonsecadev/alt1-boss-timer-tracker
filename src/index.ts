@@ -25,11 +25,6 @@ window.onload = function () {
 	}
 
 	new BossTimerTrack().start();
-
-	/* document.getElementById("settings").addEventListener("click", function(){
-		let w = window.open("settings.html","Settings","width=200,height=200");
-		startSettings(w, bossTimerTrack.playerName());
-	}); */
 }
 
 
@@ -167,6 +162,9 @@ class BossTimerTrack {
 				}
 
 				if (message.text.indexOf("Completion Time") > -1) {
+					if (this.playerTimer.boss == -1) {
+						return;
+					}
 					let split = message.text.split("Completion Time: ");
 					let timer = split[1];
 					if (timer.indexOf("- New Personal Record!") > -1) {
