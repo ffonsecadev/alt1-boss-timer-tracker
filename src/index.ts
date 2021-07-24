@@ -164,6 +164,7 @@ class BossTimerTrack {
 			}
 
 			chat.map((message) => {
+				console.error(message);
 				if (this.playerTimer.boss == -1) {
 					this.fetchBossName(message.text);
 				}
@@ -184,6 +185,11 @@ class BossTimerTrack {
 					}
 
 					let rsTimer = message.fragments[1].text;
+
+					if(rsTimer == null){
+						this.eventShow("Local timestamps in chatbox not found", true);
+					}
+
 					if (this.timers.find((x) => x.rsTimer == rsTimer) == null) {
 						this.playerTimer.timer = timer;
 						this.playerTimer.rsTimer = rsTimer;
@@ -396,7 +402,7 @@ class DOM {
 
 	public static showSettings(state: boolean) {
 		if(document.getElementById("settings"))
-			document.getElementById("settings").style.display = state ? "block" : "none";
+			document.getElementById("settings").style.display = state ? "inline-block" : "none";
 	}
 }
 

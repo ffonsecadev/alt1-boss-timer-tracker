@@ -2,7 +2,6 @@ import * as a1lib from "@alt1/base";
 import { ImgRef, ImgRefData } from "@alt1/base";
 import * as OCR from "@alt1/ocr";
 import { ImageDetect } from "@alt1/base";
-import { FORMERR } from "dns";
 require("!file-loader?name=[name].[ext]!./index.html");
 require("!file-loader?name=[name].[ext]!./appconfig.json");
 
