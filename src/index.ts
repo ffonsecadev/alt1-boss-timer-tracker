@@ -164,7 +164,6 @@ class BossTimerTrack {
 			}
 
 			chat.map((message) => {
-				console.error(message);
 				if (this.playerTimer.boss == -1) {
 					this.fetchBossName(message.text);
 				}
@@ -185,9 +184,9 @@ class BossTimerTrack {
 					}
 
 					let rsTimer = message.fragments[1].text;
-
-					if(rsTimer == null){
+					if(rsTimer.trim() == ""){
 						this.eventShow("Local timestamps in chatbox not found", true);
+						return;
 					}
 
 					if (this.timers.find((x) => x.rsTimer == rsTimer) == null) {
@@ -277,6 +276,7 @@ class BossTimerTrack {
 			case "Beastmaster Durz...": { this.playerTimer.boss = 4; return; }
 			case "Black stone dragon": { this.playerTimer.boss = 5; return; }
 			case "Commander Zilyana": { this.playerTimer.boss = 6; return; }
+			case "C.Zilyana": { this.playerTimer.boss = 6; return; }
 			case "Corporeal Beast": { this.playerTimer.boss = 7; return; }
 			case "Crassian Leviathan": { this.playerTimer.boss = 8; return; }
 			case "General Graardor": { this.playerTimer.boss = 9; return; }
