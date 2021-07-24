@@ -283,26 +283,26 @@ class BossTimerTrack {
 			case "King Black Dragon": { this.playerTimer.boss = 16; return; }
 			case "Kree'arra": { this.playerTimer.boss = 17; return; }
 			case "K'ril Tsutsaroth": { this.playerTimer.boss = 18; return; }
-			case "The Magister": { this.playerTimer.boss = 20; return; }
-			case "Masuta the Ascended": { this.playerTimer.boss = 21; return; }
-			case "Nex": { this.playerTimer.boss = 22; return; }
-			case "Nex: Angel of Death": { this.playerTimer.boss = 23; return; }
-			case "Queen Black Dragon": { this.playerTimer.boss = 24; return; }
-			case "Raksha, the Shadow Colossus": { this.playerTimer.boss = 25; return; }
-			case "The Sanctum Guardian": { this.playerTimer.boss = 26; return; }
-			case "Seiryu the Azure Serpent": { this.playerTimer.boss = 27; return; }
-			case "Solak": { this.playerTimer.boss = 28; return; }
-			case "Taraket the Necromancer": { this.playerTimer.boss = 29; return; }
-			case "Telos, the Warden": { this.playerTimer.boss = 30; return; }
-			case "Twin Furies": { this.playerTimer.boss = 31; return; }
-			case "TzTok-Jad": { this.playerTimer.boss = 32; return; }
-			case "Verak Lith": { this.playerTimer.boss = 33; return; }
-			case "Vindicta": { this.playerTimer.boss = 34; return; }
-			case "Vorago": { this.playerTimer.boss = 35; return; }
-			case "Yakamaru": { this.playerTimer.boss = 36; return; }
+			case "The Magister": { this.playerTimer.boss = 19; return; }
+			case "Masuta the Ascended": { this.playerTimer.boss = 20; return; }
+			case "Nex": { this.playerTimer.boss = 21; return; }
+			case "Nex: Angel of Death": { this.playerTimer.boss = 22; return; }
+			case "Queen Black Dragon": { this.playerTimer.boss = 23; return; }
+			case "Raksha, the Shadow Colossus": { this.playerTimer.boss = 24; return; }
+			case "The Sanctum Guardian": { this.playerTimer.boss = 25; return; }
+			case "Seiryu the Azure Serpent": { this.playerTimer.boss = 26; return; }
+			case "Solak": { this.playerTimer.boss = 27; return; }
+			case "Taraket the Necromancer": { this.playerTimer.boss = 28; return; }
+			case "Telos, the Warden": { this.playerTimer.boss = 29; return; }
+			case "Twin Furies": { this.playerTimer.boss = 30; return; }
+			case "TzTok-Jad": { this.playerTimer.boss = 31; return; }
+			case "Verak Lith": { this.playerTimer.boss = 32; return; }
+			case "Vindicta": { this.playerTimer.boss = 33; return; }
+			case "Vorago": { this.playerTimer.boss = 34; return; }
+			case "Yakamaru": { this.playerTimer.boss = 35; return; }
 			default: {
 				if (boss.indexOf("Legio") > -1) {
-					this.playerTimer.boss = 38;
+					this.playerTimer.boss = 36;
 					return;
 				}
 			}
