@@ -86,7 +86,6 @@ a:hover{
 
 #settings{
     display: none;
-    display: inline-block;
     color: #22b14c;
     cursor: pointer;
 }

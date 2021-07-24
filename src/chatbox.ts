@@ -594,7 +594,18 @@ export default class ChatBoxReader {
 		var imgdata = a1lib.capture(imgx, imgy, box.rect.width + leftmargin, box.rect.height);
 		var ocrcolors = this.readargs.colors.map(c => a1lib.unmixColor(c));
 		var data = OCR.readLine(imgdata, fonts[0].def, ocrcolors, 2, box.rect.height-9, true, false);
-		return data.text.trimLeft();
+
+		if(data.text == ""){
+			for(let i = 0; i <= box.rect.width; i++){
+				data = OCR.readLine(imgdata, fonts[0].def, ocrcolors, i, box.rect.height-9, true, true);
+				if(data.text != ""){
+					break;
+				}
+				
+			}
+		}
+		
+		return data.text.trim();
 	}
 }
 
