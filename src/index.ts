@@ -13,8 +13,19 @@ const host = location.origin.indexOf("file://") > -1 ?
 	"http://localhost:8080" :
 	"https://runepixels.com:5000";
 
+const chatfont = require("@alt1/ocr/fonts/aa_8px_new.fontmeta.json");
+const titlefont = require("@alt1/ocr/fonts/aa_9px_mono_allcaps.fontmeta.json");
 
+const imgs = a1lib.ImageDetect.webpackImages({
+	detectimg: require("./assets/images/detectimg.data.png"),
+	timer: require("./assets/images/timer.data.png")
+});
 
+const boss = ["the ambassador","araxxi","astellarn","the barrows: rise of the six","beastmaster durzag","black stone dragon",
+	"commander zilyana","corporeal beast","crassian leviathan","general graardor","giant mole","gregorovic","har-aken","helwyr","kalphite king",
+	"kalphite queen","king black dragon","kree'arra","k'ril tsutsaroth","the magister","masuta the ascended","nex","nex - angel of death","queen black dragon",
+	"raksha","the sanctum guardian","seiryu the azure serpent","solak","taraket the necromancer","telos","the twin furies","tztok-jad",
+	"verak lith","vindicta & gorvek","vorago","yakamaru","legiones"];
 
 window.onload = function () {
 	if(location.pathname.indexOf("settings") > -1){
@@ -24,7 +35,12 @@ window.onload = function () {
 		return;
 	}
 
-	new BossTimerTrack().start();
+	let bossTimerTrack = new BossTimerTrack()
+	bossTimerTrack.start();
+
+	document.getElementById("captureTimer").addEventListener("click", function(){
+		bossTimerTrack.captureTimerBeastsInterface();
+	});
 }
 
 
@@ -149,6 +165,87 @@ class BossTimerTrack {
 		return this.playerTimer.name;
 	}
 
+	public async captureTimerBeastsInterface(){
+		this.timers = [];
+		DOM.updateTimersList(this.timers);
+		
+		let screen = a1lib.captureHoldFullRs();
+		let pos = screen.findSubimage(imgs.timer);
+		if (pos.length == 0) {
+			return;
+		}
+
+		this.setBossNameFromBeastsInterface(screen, pos[0].x,  pos[0].y);
+		
+		if(this.playerTimer.boss == -1){
+			return;
+		}
+
+		DOM.setBossName(boss[this.playerTimer.boss].toUpperCase());
+
+		let data = screen.toData(pos[0].x, pos[0].y , 100, 30);
+		let rsTimer = "00:00:00";
+
+		let timer = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 17, 20, 1);
+		if(timer.text == ""){
+			let timer1 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 11, 20, 1);
+			let timer2 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 23, 20, 1);
+			
+			if(timer1.text != "" && timer2.text != ""){
+				
+				let stringDate = "0001-01:01";
+				if(Date.parse(stringDate + " " + timer1.text) <  Date.parse(stringDate + " " + timer2.text)){			
+					this.addTimer(timer1.text, rsTimer);
+					return;
+				}
+				console.error(timer1.text,timer2.text);
+				this.addTimer(timer2.text, rsTimer);
+				return;
+			}
+
+			if(timer1.text != "" && timer2.text == ""){
+				this.addTimer(timer1.text, rsTimer);
+				return;
+			}
+
+			if(timer1.text == "" && timer2.text != ""){
+				this.addTimer(timer2.text, rsTimer);
+				return;
+			}
+			return;
+		}
+
+		this.addTimer(timer.text, rsTimer);
+	}
+
+	private setBossNameFromBeastsInterface(img: a1lib.ImgRefBind, x: number, y: number){
+		let data = img.toData(x-400, y-250, 400, 35);
+		for(let i = 0; i < data.width; i++){
+			for(let j = 0; j < data.height; j++){
+				let bossName = OCR.findReadLine(data, titlefont, [[255,203,5]], i, j, 20, 1);
+				bossName.text = bossName.text.trim().toLowerCase();
+				if(bossName.text != "" && boss.includes(bossName.text)){
+					this.setBoss(bossName.text);
+					return;
+				}
+			}
+		}
+	}
+
+	private addTimer(timer: string, rsTimer: string){
+		if (this.timers.find((x) => x.rsTimer == rsTimer && x.timer == timer) == null) {
+			this.playerTimer.timer = timer;
+			this.playerTimer.rsTimer = rsTimer;
+			this.sendTime();
+			this.timers.push({
+				timer: timer, 
+				rsTimer: rsTimer
+			});
+
+			DOM.updateTimersList(this.timers);
+		}
+	}
+
 	private fetchPlayerName() {
 		return this.chatBox.playerName();
 	}
@@ -189,17 +286,7 @@ class BossTimerTrack {
 						return;
 					}
 
-					if (this.timers.find((x) => x.rsTimer == rsTimer) == null) {
-						this.playerTimer.timer = timer;
-						this.playerTimer.rsTimer = rsTimer;
-						this.sendTime();
-						this.timers.push({
-							timer: timer, 
-							rsTimer: rsTimer
-						});
-
-						DOM.updateTimersList(this.timers);
-					}
+					this.addTimer(timer, rsTimer);
 				}
 			});
 		}, 1000);
@@ -267,47 +354,55 @@ class BossTimerTrack {
 	}
 
 	private setBoss(boss: string) {
+		boss = boss.toLowerCase();
 		switch (boss) {
-			case "The Ambassador": { this.playerTimer.boss = 0; return; }
-			case "Araxxor": { this.playerTimer.boss = 1; return; }
-			case "Astellarn": { this.playerTimer.boss = 2; return; }
-			case "Barrows - Rise of the Six": { this.playerTimer.boss = 3; return; }
-			case "Beastmaster Durzag": { this.playerTimer.boss = 4; return; }
-			case "Beastmaster Durz...": { this.playerTimer.boss = 4; return; }
-			case "Black stone dragon": { this.playerTimer.boss = 5; return; }
-			case "Commander Zilyana": { this.playerTimer.boss = 6; return; }
-			case "C.Zilyana": { this.playerTimer.boss = 6; return; }
-			case "Corporeal Beast": { this.playerTimer.boss = 7; return; }
-			case "Crassian Leviathan": { this.playerTimer.boss = 8; return; }
-			case "General Graardor": { this.playerTimer.boss = 9; return; }
-			case "Giant Mole": { this.playerTimer.boss = 10; return; }
-			case "Gregorovic": { this.playerTimer.boss = 11; return; }
-			case "Har-Aken": { this.playerTimer.boss = 12; return; }
-			case "Helwyr": { this.playerTimer.boss = 13; return; }
-			case "Kalphite King": { this.playerTimer.boss = 14; return; }
-			case "Kalphite Queen": { this.playerTimer.boss = 15; return; }
-			case "King Black Dragon": { this.playerTimer.boss = 16; return; }
-			case "Kree'arra": { this.playerTimer.boss = 17; return; }
-			case "K'ril Tsutsaroth": { this.playerTimer.boss = 18; return; }
-			case "The Magister": { this.playerTimer.boss = 19; return; }
-			case "Masuta the Ascended": { this.playerTimer.boss = 20; return; }
-			case "Nex": { this.playerTimer.boss = 21; return; }
-			case "Nex: Angel of Death": { this.playerTimer.boss = 22; return; }
-			case "Queen Black Dragon": { this.playerTimer.boss = 23; return; }
-			case "Raksha, the Shadow Colossus": { this.playerTimer.boss = 24; return; }
-			case "The Sanctum Guardian": { this.playerTimer.boss = 25; return; }
-			case "Seiryu the Azure Serpent": { this.playerTimer.boss = 26; return; }
-			case "Solak": { this.playerTimer.boss = 27; return; }
-			case "Taraket the Necromancer": { this.playerTimer.boss = 28; return; }
-			case "Telos, the Warden": { this.playerTimer.boss = 29; return; }
-			case "Twin Furies": { this.playerTimer.boss = 30; return; }
-			case "TzTok-Jad": { this.playerTimer.boss = 31; return; }
-			case "Verak Lith": { this.playerTimer.boss = 32; return; }
-			case "Vindicta": { this.playerTimer.boss = 33; return; }
-			case "Vorago": { this.playerTimer.boss = 34; return; }
-			case "Yakamaru": { this.playerTimer.boss = 35; return; }
+			case "the ambassador": { this.playerTimer.boss = 0; return; }
+			case "araxxor": { this.playerTimer.boss = 1; return; }
+			case "araxxi": { this.playerTimer.boss = 1; return; }
+			case "astellarn": { this.playerTimer.boss = 2; return; }
+			case "barrows - rise of the six": { this.playerTimer.boss = 3; return; }
+			case "the barrows: rise of the six": { this.playerTimer.boss = 3; return; }
+			case "beastmaster durzag": { this.playerTimer.boss = 4; return; }
+			case "beastmaster durz...": { this.playerTimer.boss = 4; return; }
+			case "black stone dragon": { this.playerTimer.boss = 5; return; }
+			case "commander zilyana": { this.playerTimer.boss = 6; return; }
+			case "c.zilyana": { this.playerTimer.boss = 6; return; }
+			case "corporeal beast": { this.playerTimer.boss = 7; return; }
+			case "crassian leviathan": { this.playerTimer.boss = 8; return; }
+			case "general graardor": { this.playerTimer.boss = 9; return; }
+			case "giant mole": { this.playerTimer.boss = 10; return; }
+			case "gregorovic": { this.playerTimer.boss = 11; return; }
+			case "har-aken": { this.playerTimer.boss = 12; return; }
+			case "helwyr": { this.playerTimer.boss = 13; return; }
+			case "kalphite king": { this.playerTimer.boss = 14; return; }
+			case "kalphite queen": { this.playerTimer.boss = 15; return; }
+			case "king black dragon": { this.playerTimer.boss = 16; return; }
+			case "kree'arra": { this.playerTimer.boss = 17; return; }
+			case "k'ril tsutsaroth": { this.playerTimer.boss = 18; return; }
+			case "the magister": { this.playerTimer.boss = 19; return; }
+			case "masuta the ascended": { this.playerTimer.boss = 20; return; }
+			case "nex": { this.playerTimer.boss = 21; return; }
+			case "nex: angel of death": { this.playerTimer.boss = 22; return; }
+			case "nex - angel of death": { this.playerTimer.boss = 22; return; }
+			case "queen black dragon": { this.playerTimer.boss = 23; return; }
+			case "raksha, the shadow colossus": { this.playerTimer.boss = 24; return; }
+			case "raksha": { this.playerTimer.boss = 24; return; }
+			case "the sanctum guardian": { this.playerTimer.boss = 25; return; }
+			case "seiryu the azure serpent": { this.playerTimer.boss = 26; return; }
+			case "solak": { this.playerTimer.boss = 27; return; }
+			case "taraket the necromancer": { this.playerTimer.boss = 28; return; }
+			case "telos, the warden": { this.playerTimer.boss = 29; return; }
+			case "telos": { this.playerTimer.boss = 29; return; }
+			case "twin furies": { this.playerTimer.boss = 30; return; }
+			case "the twin furies": { this.playerTimer.boss = 30; return; }
+			case "tztok-jad": { this.playerTimer.boss = 31; return; }
+			case "verak lith": { this.playerTimer.boss = 32; return; }
+			case "vindicta": { this.playerTimer.boss = 33; return; }
+			case "vindicta & gorvek": { this.playerTimer.boss = 33; return; }
+			case "vorago": { this.playerTimer.boss = 34; return; }
+			case "yakamaru": { this.playerTimer.boss = 35; return; }
 			default: {
-				if (boss.indexOf("Legio") > -1) {
+				if (boss.indexOf("legio") > -1) {
 					this.playerTimer.boss = 36;
 					return;
 				}
@@ -353,19 +448,13 @@ class DOM {
 			timer.map((timer: Timer) => {
 				let stringDate = "0001-01:01";
 	
-				let date = Date.parse(stringDate);
+				let date = Date.parse(stringDate + " " + timer);
 				if(date < currentBest){			
 					currentBest = date;
 					currentTimer = timer.timer;
 				}
 
-				let shortTimer =  timer.timer;
-
-				if(shortTimer.startsWith("00:")){
-					shortTimer = timer.timer.split("00:")[1];
-				}
-
-				this.timerList().insertAdjacentHTML("afterbegin", "<span timer='"+ timer.timer +"'>" + shortTimer + "</span>");
+				this.timerList().insertAdjacentHTML("afterbegin", "<span timer='"+ timer.timer +"'>" +  timer.timer + "</span>");
 			});
 	
 			let elements = this.timerList().querySelectorAll("span");
@@ -405,12 +494,6 @@ class DOM {
 			document.getElementById("settings").style.display = state ? "inline-block" : "none";
 	}
 }
-
-var chatfont = require("@alt1/ocr/fonts/aa_8px_new.fontmeta.json");
-
-var imgs = a1lib.ImageDetect.webpackImages({
-	detectimg: require("./assets/images/detectimg.data.png")
-});
 
 class TargetMobReader {
 	state: { hp: number, name: string } | null = null;

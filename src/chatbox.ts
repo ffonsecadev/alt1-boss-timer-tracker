@@ -43,7 +43,8 @@ const chatbadges = ImageDetect.webpackImages({
 	broadcast: require("./assets/images/badgebroadcast.data.png"),
 	drop: require("./assets/images/badgedrop.data.png"),
 	ironman: require("./assets/images/badgeironman.data.png"),
-	hcim: require("./assets/images/badgehcim.data.png")
+	hcim: require("./assets/images/badgehcim.data.png"),
+	quickChat: require("./assets/images/quick_chat.data.png")
 });
 
 const badgemap: { [key in keyof typeof chatbadges.raw]: string } = {
@@ -54,6 +55,7 @@ const badgemap: { [key in keyof typeof chatbadges.raw]: string } = {
 	drop: "\u2746",//HEAVY CHEVRON SNOWFLAKE
 	ironman: "\u26AF",//UNMARRIED PARTNERSHIP SYMBOL
 	hcim: "\u{1F480}",//SKULL
+	quickChat: "\u2746"
 }
 
 /* export const defaultcolors = [
@@ -89,7 +91,8 @@ export const defaultcolors = [
 	[164, 153, 125], //brownish gray friends/fc/cc list name
 	[215, 195, 119], //interface preset color
 	[45,186,20],
-	[248, 217, 24]
+	[248, 217, 24],
+	[127, 169, 255]
 ];
 
 type BoxCorner = a1lib.PointLike & { type: "hidden" | "full" | "legacy" }

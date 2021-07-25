@@ -160,7 +160,6 @@ a:hover{
     margin-top: 5px;
     background-color: #201f1e;
     color: #22b14c;
-    font-family: #22b14c;
     border: 1px solid #252423;
     padding: 7px 15px;
     cursor: pointer;
@@ -169,6 +168,30 @@ a:hover{
 
 #pin button:hover{
     color: #a6a6a4;
+}
+
+.capture{
+    margin-top: 5px;
+    margin-left: 5px;
+}
+
+.capture button{
+    padding: 5px 5px;
+    background-color: #1f1f1f;
+    border: 1px solid #1f1f1f;
+    box-shadow: 0 0 2px 0 #000;
+    font-family: bold;
+    cursor: pointer;
+    color: #22b14c;
+}
+
+.capture button:hover{
+    text-decoration: underline;
+}
+
+.capture span{
+    display: block;
+    font-size: 10px;
 }
 
 .loading {
