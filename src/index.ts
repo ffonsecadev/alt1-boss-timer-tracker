@@ -25,7 +25,7 @@ const boss = ["the ambassador","araxxi","astellarn","the barrows: rise of the si
 	"commander zilyana","corporeal beast","crassian leviathan","general graardor","giant mole","gregorovic","har-aken","helwyr","kalphite king",
 	"kalphite queen","king black dragon","kree'arra","k'ril tsutsaroth","the magister","masuta the ascended","nex","nex - angel of death","queen black dragon",
 	"raksha","the sanctum guardian","seiryu the azure serpent","solak","taraket the necromancer","telos","the twin furies","tztok-jad",
-	"verak lith","vindicta & gorvek","vorago","yakamaru","legiones"];
+	"verak lith","vindicta & gorvek","vorago","yakamaru","legiones", "kerapac, the bound", "kerapac"];
 
 window.onload = function () {
 	if(location.pathname.indexOf("settings") > -1){
@@ -39,7 +39,13 @@ window.onload = function () {
 	bossTimerTrack.start();
 
 	document.getElementById("captureTimer").addEventListener("click", function(){
-		bossTimerTrack.captureTimerBeastsInterface();
+		document.getElementById("captureLoading").style.display = "block";
+		this.style.display = "none";
+		setTimeout(() => {
+			bossTimerTrack.captureTimerBeastsInterface();
+			this.style.display = "block";
+			document.getElementById("captureLoading").style.display = "none";
+		}, 0);
 	});
 }
 
@@ -165,7 +171,7 @@ class BossTimerTrack {
 		return this.playerTimer.name;
 	}
 
-	public async captureTimerBeastsInterface(){
+	public captureTimerBeastsInterface(){
 		this.timers = [];
 		DOM.updateTimersList(this.timers);
 		
@@ -192,13 +198,11 @@ class BossTimerTrack {
 			let timer2 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 23, 20, 1);
 			
 			if(timer1.text != "" && timer2.text != ""){
-				
 				let stringDate = "0001-01:01";
 				if(Date.parse(stringDate + " " + timer1.text) <  Date.parse(stringDate + " " + timer2.text)){			
 					this.addTimer(timer1.text, rsTimer);
 					return;
 				}
-				console.error(timer1.text,timer2.text);
 				this.addTimer(timer2.text, rsTimer);
 				return;
 			}
@@ -253,6 +257,9 @@ class BossTimerTrack {
 	private detectChat() {
 		setInterval(() => {
 			let chat = this.chatBox.read();
+			
+			
+		
 			if (chat == null || chat.length == 0) {
 				if (this.playerTimer.boss == -1) {
 					this.fetchBossName("");
@@ -261,6 +268,7 @@ class BossTimerTrack {
 			}
 
 			chat.map((message) => {
+				console.error(message);
 				if (this.playerTimer.boss == -1) {
 					this.fetchBossName(message.text);
 				}
@@ -401,9 +409,17 @@ class BossTimerTrack {
 			case "vindicta & gorvek": { this.playerTimer.boss = 33; return; }
 			case "vorago": { this.playerTimer.boss = 34; return; }
 			case "yakamaru": { this.playerTimer.boss = 35; return; }
+			case "kerapac": { this.playerTimer.boss = 37; return; }
+			case "kerapac, the bound": { this.playerTimer.boss = 37; return; }
+			case "yakamaru": { this.playerTimer.boss = 37; return; }
 			default: {
 				if (boss.indexOf("legio") > -1) {
 					this.playerTimer.boss = 36;
+					return;
+				}
+
+				if (boss.indexOf("kerapac") > -1) {
+					this.playerTimer.boss = 37;
 					return;
 				}
 			}

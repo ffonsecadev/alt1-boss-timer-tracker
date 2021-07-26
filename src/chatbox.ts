@@ -296,16 +296,6 @@ export default class ChatBoxReader {
 
 		var ocrcolors = this.readargs.colors.map(c => a1lib.unmixColor(c));
 
-		
-		/* var data = OCR.readLine(imgdata, fonts[0].def, ocrcolors, 2, 110, true, false);
-		console.error(data.text);
- */
-		//2 110  | 119
-		// 2 156 | 165
-
-
-		
-
 		if (!this.font) {
 			for (let font of fonts) {
 				let line1 = this.readChatLine(box, imgdata, imgx, imgy, font, ocrcolors, 0);

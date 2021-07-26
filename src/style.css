@@ -236,3 +236,7 @@ a:hover{
         -webkit-transform: rotate(360deg);
     }
 }
+
+#captureLoading{
+    display: none;
+}
