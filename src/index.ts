@@ -257,9 +257,6 @@ class BossTimerTrack {
 	private detectChat() {
 		setInterval(() => {
 			let chat = this.chatBox.read();
-			
-			
-		
 			if (chat == null || chat.length == 0) {
 				if (this.playerTimer.boss == -1) {
 					this.fetchBossName("");
@@ -268,7 +265,6 @@ class BossTimerTrack {
 			}
 
 			chat.map((message) => {
-				console.error(message);
 				if (this.playerTimer.boss == -1) {
 					this.fetchBossName(message.text);
 				}

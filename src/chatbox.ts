@@ -16,10 +16,10 @@ type FontSetting = {
 let chatfont = require("@alt1/ocr/fonts/chat_8px.fontmeta.json");
 
 let fonts: FontSetting[] = [
-	{ name: "11pt", lineheight: 15, badgey: -8, dy: 0, def: require("@alt1/ocr/fonts/chat_8px.fontmeta.json") },
-	{ name: "13pt", lineheight: 17, badgey: -9, dy: -1, def: require("@alt1/ocr/fonts/chat_10px.fontmeta.json") },
-	{ name: "15pt", lineheight: 19, badgey: -11, dy: -2, def: require("@alt1/ocr/fonts/chat_11px.fontmeta.json") },
-	{ name: "17pt", lineheight: 21, badgey: -11, dy: -2, def: require("@alt1/ocr/fonts/chat_13px.fontmeta.json") }
+	{ name: "11pt", lineheight: 12, badgey: -8, dy: 0, def: require("@alt1/ocr/fonts/chat_8px.fontmeta.json") },
+	{ name: "13pt", lineheight: 21, badgey: -9, dy: -8, def: require("@alt1/ocr/fonts/chat_10px.fontmeta.json") },
+	{ name: "15pt", lineheight: 26, badgey: -11, dy: -12, def: require("@alt1/ocr/fonts/chat_11px.fontmeta.json") },
+	{ name: "17pt", lineheight: 23, badgey: -11, dy: -7, def: require("@alt1/ocr/fonts/chat_13px.fontmeta.json") }
 ];
  
 const imgs = ImageDetect.webpackImages({
