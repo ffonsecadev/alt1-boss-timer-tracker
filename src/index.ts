@@ -35,7 +35,7 @@ window.onload = function () {
 		return;
 	}
 
-	let bossTimerTrack = new BossTimerTrack()
+	let bossTimerTrack = new BossTimerTrack();
 	bossTimerTrack.start();
 
 	document.getElementById("captureTimer").addEventListener("click", function(){
@@ -118,12 +118,14 @@ function loadSettings(name: string){
 type PlayerTime = {
 	name: string,
 	boss: number,
-	timer: string
+	timer1: string,
+	timer2: string,
 	rsTimer: string;
 };
 
 type Timer = {
-	timer: string,
+	timer1: string,
+	timer2: string,
 	rsTimer: string
 };
 
@@ -134,7 +136,8 @@ class BossTimerTrack {
 	private playerTimer: PlayerTime = {
 		name: "",
 		boss: -1,
-		timer: "",
+		timer1: "",
+		timer2: "",
 		rsTimer: ""
 	};
 	private timers: Timer[] = [];
@@ -192,34 +195,28 @@ class BossTimerTrack {
 		let data = screen.toData(pos[0].x, pos[0].y , 100, 30);
 		let rsTimer = "00:00:00";
 
-		let timer = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 17, 20, 1);
-		if(timer.text == ""){
+		let timer2 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 17, 20, 1);
+		if(timer2.text == ""){
 			let timer1 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 11, 20, 1);
-			let timer2 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 23, 20, 1);
-			
-			if(timer1.text != "" && timer2.text != ""){
-				let stringDate = "0001-01:01";
-				if(Date.parse(stringDate + " " + timer1.text) <  Date.parse(stringDate + " " + timer2.text)){			
-					this.addTimer(timer1.text, rsTimer);
-					return;
-				}
-				this.addTimer(timer2.text, rsTimer);
+			timer2 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 23, 20, 1);
+
+			if(timer1.text == "" && timer2.text == ""){
 				return;
 			}
 
-			if(timer1.text != "" && timer2.text == ""){
-				this.addTimer(timer1.text, rsTimer);
-				return;
+			if(timer1.text == ""){
+				timer1.text = "00:00:00"
 			}
 
-			if(timer1.text == "" && timer2.text != ""){
-				this.addTimer(timer2.text, rsTimer);
-				return;
+			if(timer2.text == ""){
+				timer2.text = "00:00:00"
 			}
+
+			this.addTimer(timer1.text, timer2.text, rsTimer);
 			return;
 		}
 
-		this.addTimer(timer.text, rsTimer);
+		this.addTimer("00:00:00", timer2.text, rsTimer);
 	}
 
 	private setBossNameFromBeastsInterface(img: a1lib.ImgRefBind, x: number, y: number){
@@ -236,13 +233,15 @@ class BossTimerTrack {
 		}
 	}
 
-	private addTimer(timer: string, rsTimer: string){
-		if (this.timers.find((x) => x.rsTimer == rsTimer && x.timer == timer) == null) {
-			this.playerTimer.timer = timer;
+	private addTimer(timer1: string, timer2: string, rsTimer: string){
+		if (this.timers.find((x) => x.rsTimer == rsTimer && x.timer1 == timer1 && x.timer2 == timer2) == null) {
+			this.playerTimer.timer1 = timer1;
+			this.playerTimer.timer2 = timer2;
 			this.playerTimer.rsTimer = rsTimer;
 			this.sendTime();
 			this.timers.push({
-				timer: timer, 
+				timer1: timer1, 
+				timer2: timer2, 
 				rsTimer: rsTimer
 			});
 
@@ -274,14 +273,14 @@ class BossTimerTrack {
 						return;
 					}
 					let split = message.text.split("Completion Time: ");
-					let timer = split[1];
+					let timer2 = split[1];
 
-					if (timer.indexOf("- New Personal Record!") > -1) {
-						timer = timer.split(" - New Personal Record!")[0]
+					if (timer2.indexOf("- New Personal Record!") > -1) {
+						timer2 = timer2.split(" - New Personal Record!")[0]
 					}
 
-					if(timer.match(/:/g).length <= 1){
-						timer = "00:" + timer
+					if(timer2.match(/:/g).length <= 1){
+						timer2 = "00:" + timer2
 					}
 
 					let rsTimer = message.fragments[1].text;
@@ -290,7 +289,7 @@ class BossTimerTrack {
 						return;
 					}
 
-					this.addTimer(timer, rsTimer);
+					this.addTimer("00:00:00", timer2, rsTimer);
 				}
 			});
 		}, 1000);
@@ -312,17 +311,20 @@ class BossTimerTrack {
 
 		response.then(() => {
 			this.eventShow("...", false);
-			this.playerTimer.boss = -1;
-			this.playerTimer.timer = "";
-			this.playerTimer.rsTimer = "";
+			this.resetPlayerTimer();
 		});
 
 		response.catch((err: any) => {
 			this.eventShow("Error save the timer", true);
-			this.playerTimer.boss = -1;
-			this.playerTimer.timer = "";
-			this.playerTimer.rsTimer = "";
+			this.resetPlayerTimer();
 		});
+	}
+
+	private resetPlayerTimer(){
+		this.playerTimer.boss = -1;
+		this.playerTimer.timer1 = "";
+		this.playerTimer.timer2 = "";
+		this.playerTimer.rsTimer = "";
 	}
 
 	private fetchBossName(text: string) {
@@ -456,19 +458,35 @@ class DOM {
 			this.timerList().innerHTML = "";
 			let currentBest = new Date().getTime();
 			let currentTimer = "";
+
+			let findBest: boolean = false;
 			
 			timer.map((timer: Timer) => {
 				let stringDate = "0001-01:01";
 	
-				let date = Date.parse(stringDate + " " + timer);
-				if(date < currentBest){			
-					currentBest = date;
-					currentTimer = timer.timer;
+				if(timer.rsTimer != "00:00:00"){
+					findBest = true;
+					let date = Date.parse(stringDate + " " + timer.timer2);
+					if(date < currentBest){			
+						currentBest = date;
+						currentTimer = timer.timer2;
+					}
+				}
+				
+				if(timer.timer1 != "00:00:00"){
+					this.timerList().insertAdjacentHTML("afterbegin", "<span timer='"+ timer.timer1 +"'>" +  timer.timer1 + "</span>");
 				}
 
-				this.timerList().insertAdjacentHTML("afterbegin", "<span timer='"+ timer.timer +"'>" +  timer.timer + "</span>");
+				if(timer.timer2 != "00:00:00"){
+					this.timerList().insertAdjacentHTML("afterbegin", "<span timer='"+ timer.timer2 +"'>" +  timer.timer2 + "</span>");
+				}
+		
 			});
 	
+			if(!findBest){
+				return;
+			}
+
 			let elements = this.timerList().querySelectorAll("span");
 			if(elements.length > 0){
 				elements.forEach((element) => {
