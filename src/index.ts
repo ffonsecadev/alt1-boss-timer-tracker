@@ -1,5 +1,5 @@
 require("!file-loader?name=[name].[ext]!./index.html");
-require("!file-loader?name=[name].[ext]!./settings.html");
+require("!file-loader?name=[name].[ext]!./privacy.html");
 require("!file-loader?name=[name].[ext]!./appconfig.json");
 require("!file-loader?name=[name].[ext]!./style.css");
 require("!file-loader?name=[name].[ext]!./assets/fonts/OpenSans-Regular.ttf");
@@ -28,7 +28,7 @@ const boss = ["the ambassador","araxxi","astellarn","the barrows: rise of the si
 	"verak lith","vindicta & gorvek","vorago","yakamaru","legiones", "kerapac, the bound", "kerapac"];
 
 window.onload = function () {
-	if(location.pathname.indexOf("settings") > -1){
+	if(location.pathname.indexOf("privacy") > -1){
 		let bossTimerTrack = new BossTimerTrack();
 		bossTimerTrack.start(false);
 		loadSettings(bossTimerTrack.playerName())
@@ -51,7 +51,7 @@ window.onload = function () {
 
 
 function loadSettings(name: string){
-	const response = fetch(host + "/players/timer-settings/state?name=" + name, {
+	const response = fetch(host + "/players/timer-privacy/state?name=" + name, {
 		method: 'GET',
 		headers: {
 			'content-type': 'application/json'
@@ -75,7 +75,7 @@ function loadSettings(name: string){
 
 	document.getElementById("public").addEventListener("click", function(){
 		loading();
-		let request = fetch(host + "/players/timer-settings", {
+		let request = fetch(host + "/players/timer-privacy", {
 			method: 'POST',
 			body: JSON.stringify({name: name, pin: "" }),
 			headers: {
@@ -98,7 +98,7 @@ function loadSettings(name: string){
 			return;
 		}
 
-		let request = fetch(host + "/players/timer-settings", {
+		let request = fetch(host + "/players/timer-privacy", {
 			method: 'POST',
 			body: JSON.stringify({name: name, pin: pin }),
 			headers: {
@@ -118,14 +118,22 @@ function loadSettings(name: string){
 type PlayerTime = {
 	name: string,
 	boss: number,
-	timer1: string,
-	timer2: string,
+	type: TimerType,
+	timer: string,
 	rsTimer: string;
 };
 
+
+enum TimerType {
+	Unset = -1,
+	NormalMode = 0,
+	HardOrGroupMode = 1,
+	UnknownMode = 2
+}
+
 type Timer = {
-	timer1: string,
-	timer2: string,
+	type: TimerType,
+	timer: string,
 	rsTimer: string
 };
 
@@ -136,8 +144,8 @@ class BossTimerTrack {
 	private playerTimer: PlayerTime = {
 		name: "",
 		boss: -1,
-		timer1: "",
-		timer2: "",
+		type: TimerType.Unset,
+		timer: "",
 		rsTimer: ""
 	};
 	private timers: Timer[] = [];
@@ -195,10 +203,10 @@ class BossTimerTrack {
 		let data = screen.toData(pos[0].x, pos[0].y , 100, 30);
 		let rsTimer = "00:00:00";
 
-		let timer2 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 17, 20, 1);
-		if(timer2.text == ""){
-			let timer1 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 11, 20, 1);
-			timer2 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 23, 20, 1);
+		let timer1 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 17, 20, 1);
+		if(timer1.text == ""){
+			timer1 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 11, 20, 1);
+			let timer2 = OCR.findReadLine(data, chatfont, [[255, 255, 255], [255, 48, 48]], 21, 23, 20, 1);
 
 			if(timer1.text == "" && timer2.text == ""){
 				return;
@@ -212,11 +220,21 @@ class BossTimerTrack {
 				timer2.text = "00:00:00"
 			}
 
-			this.addTimer(timer1.text, timer2.text, rsTimer);
+			if(this.playerTimer.boss == 0 || this.playerTimer.boss == 2 ||
+				this.playerTimer.boss == 5 || this.playerTimer.boss == 8 ||
+				this.playerTimer.boss == 24 ||  this.playerTimer.boss == 25 ||
+				this.playerTimer.boss == 32){
+				this.addTimer(TimerType.NormalMode, timer2.text, rsTimer);
+				this.addTimer(TimerType.HardOrGroupMode, timer1.text, rsTimer);
+				return;
+			}
+
+			this.addTimer(TimerType.NormalMode, timer1.text, rsTimer);
+			this.addTimer(TimerType.HardOrGroupMode, timer2.text, rsTimer);
 			return;
 		}
 
-		this.addTimer("00:00:00", timer2.text, rsTimer);
+		this.addTimer(TimerType.NormalMode, timer1.text, rsTimer);
 	}
 
 	private setBossNameFromBeastsInterface(img: a1lib.ImgRefBind, x: number, y: number){
@@ -233,15 +251,15 @@ class BossTimerTrack {
 		}
 	}
 
-	private addTimer(timer1: string, timer2: string, rsTimer: string){
-		if (this.timers.find((x) => x.rsTimer == rsTimer && x.timer1 == timer1 && x.timer2 == timer2) == null) {
-			this.playerTimer.timer1 = timer1;
-			this.playerTimer.timer2 = timer2;
+	private addTimer(type: number, timer: string, rsTimer: string){
+		if (this.timers.find((x) => x.rsTimer == rsTimer && x.type == type && x.timer == timer) == null) {
+			this.playerTimer.type = type;
+			this.playerTimer.timer = timer;
 			this.playerTimer.rsTimer = rsTimer;
 			this.sendTime();
 			this.timers.push({
-				timer1: timer1, 
-				timer2: timer2, 
+				type: type, 
+				timer: timer, 
 				rsTimer: rsTimer
 			});
 
@@ -273,14 +291,14 @@ class BossTimerTrack {
 						return;
 					}
 					let split = message.text.split("Completion Time: ");
-					let timer2 = split[1];
+					let timer = split[1];
 
-					if (timer2.indexOf("- New Personal Record!") > -1) {
-						timer2 = timer2.split(" - New Personal Record!")[0]
+					if (timer.indexOf("- New Personal Record!") > -1) {
+						timer = timer.split(" - New Personal Record!")[0]
 					}
 
-					if(timer2.match(/:/g).length <= 1){
-						timer2 = "00:" + timer2
+					if(timer.match(/:/g).length <= 1){
+						timer = "00:" + timer
 					}
 
 					let rsTimer = message.fragments[1].text;
@@ -289,7 +307,7 @@ class BossTimerTrack {
 						return;
 					}
 
-					this.addTimer("00:00:00", timer2, rsTimer);
+					this.addTimer(TimerType.UnknownMode, timer, rsTimer);
 				}
 			});
 		}, 1000);
@@ -322,8 +340,8 @@ class BossTimerTrack {
 
 	private resetPlayerTimer(){
 		this.playerTimer.boss = -1;
-		this.playerTimer.timer1 = "";
-		this.playerTimer.timer2 = "";
+		this.playerTimer.timer = "";
+		this.playerTimer.type = -1;
 		this.playerTimer.rsTimer = "";
 	}
 
@@ -466,21 +484,16 @@ class DOM {
 	
 				if(timer.rsTimer != "00:00:00"){
 					findBest = true;
-					let date = Date.parse(stringDate + " " + timer.timer2);
+					let date = Date.parse(stringDate + " " + timer.timer);
 					if(date < currentBest){			
 						currentBest = date;
-						currentTimer = timer.timer2;
+						currentTimer = timer.timer;
 					}
 				}
 				
-				if(timer.timer1 != "00:00:00"){
-					this.timerList().insertAdjacentHTML("afterbegin", "<span timer='"+ timer.timer1 +"'>" +  timer.timer1 + "</span>");
+				if(timer.timer != "00:00:00"){
+					this.timerList().insertAdjacentHTML("afterbegin", "<span timer='"+ timer.timer +"'>" +  timer.timer + "</span>");
 				}
-
-				if(timer.timer2 != "00:00:00"){
-					this.timerList().insertAdjacentHTML("afterbegin", "<span timer='"+ timer.timer2 +"'>" +  timer.timer2 + "</span>");
-				}
-		
 			});
 	
 			if(!findBest){

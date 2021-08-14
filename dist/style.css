@@ -122,6 +122,7 @@ a:hover{
     font-family: 'bold';
     user-select: none;
     box-shadow: 0px 0px 2px 0px #000;
+    margin-bottom: 5px;
 }
 
 .settings-body .switch span{
@@ -172,7 +173,7 @@ a:hover{
 
 .capture{
     margin-top: 5px;
-    margin-left: 5px;
+    margin-bottom: 5px;
 }
 
 .capture button{
